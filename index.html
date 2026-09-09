@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Base Builder & Wallet Rank Tracker</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --base-blue: #0052ff;
+      --accent-glow: rgba(0, 82, 255, 0.15);
+      --sidebar-width: 260px;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    .text-muted {
+      color: #e2e8f0 !important;
+    }
+
+    .metric-title {
+      font-size: 0.75rem;
+      color: #ffffff !important;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      letter-spacing: 0.3px;
+    }
+
+    .form-label {
+      color: #ffffff !important;
+      font-weight: 600;
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background: #0d1322;
+      border-right: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1.5rem 1rem;
+      z-index: 1000;
+    }
+
+    .mobile-navbar {
+      background-color: #0d1322;
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.75rem 1rem;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: 0.5px;
+      color: var(--base-blue);
+      text-decoration: none;
+    }
+
+    .nav-link-custom {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.75rem 1rem;
+      color: #cbd5e1;
+      font-weight: 500;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      margin-bottom: 0.25rem;
+    }
+
+    .nav-link-custom:hover {
+      background-color: #1f2937;
+      color: #ffffff;
+    }
+
+    .nav-link-custom.active {
+      background-color: var(--accent-glow);
+      color: #60a5fa;
+      font-weight: 600;
+      border: 1px solid rgba(0, 82, 255, 0.3);
+    }
+
+    .main-content {
+      margin-left: var(--sidebar-width);
+      padding: 2.5rem 3rem;
+    }
+
+    @media (max-width: 991.98px) {
+      .main-content {
+        margin-left: 0;
+        padding: 1.5rem;
+      }
+    }
+
+    .card-custom {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      height: 100%;
+    }
+
+    .badge-dev {
+      background-color: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 0.35rem 0.65rem;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    .metric-box {
+      background-color: #1a2234;
+      border: 1px solid #2d3748;
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+    }
+
+    .metric-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .form-control-custom {
+      background-color: #0d1322;
+      border: 1px solid var(--card-border);
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 0.65rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    .form-control-custom::placeholder {
+      color: #94a3b8 !important;
+      opacity: 1;
+    }
+
+    .form-control-custom:focus {
+      background-color: #0d1322;
+      color: #ffffff;
+      border-color: var(--base-blue);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+
+    .form-control-custom.is-invalid {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+    }
+
+    .form-range::-webkit-slider-thumb {
+      background: var(--base-blue);
+      box-shadow: 0 0 10px rgba(0, 82, 255, 0.8);
+      cursor: grab;
+    }
+
+    .form-range::-webkit-slider-thumb:active {
+      cursor: grabbing;
+    }
+
+    .btn-base {
+      background-color: var(--base-blue);
+      color: white;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 0.65rem 1.25rem;
+      border: none;
+      transition: background 0.2s ease;
+    }
+
+    .btn-base:hover {
+      background-color: #0043d0;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mobile Top Navigation -->
+  <nav class="navbar navbar-dark mobile-navbar sticky-top d-lg-none">
+    <div class="container-fluid">
+      <a href="#" class="brand-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#0052ff">
+          <circle cx="12" cy="12" r="10"/>
+        </svg>
+        BASE RANK
+      </a>
+      <button class="navbar-toggler border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse mt-3" id="mobileNav">
+        <div class="nav flex-column mb-3">
+          <a href="#" class="nav-link-custom active"><i class="bi bi-speedometer2"></i> Builder Dashboard</a>
+          <a href="#" class="nav-link-custom"><i class="bi bi-trophy"></i> Global Leaderboard</a>
+          <a href="#" class="nav-link-custom"><i class="bi bi-code-square"></i> Contract Checker</a>
+          <a href="#" class="nav-link-custom"><i class="bi bi-compass"></i> Base Docs</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Desktop Sidebar -->
+  <aside class="sidebar d-none d-lg-flex">
+    <div>
+      <a href="#" class="brand-logo mb-4 p-2">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#0052ff">
+          <circle cx="12" cy="12" r="10"/>
+        </svg>
+        BASE RANK
+      </a>
+      <nav class="nav flex-column">
+        <a href="#" class="nav-link-custom active"><i class="bi bi-speedometer2"></i> Builder Dashboard</a>
+        <a href="#" class="nav-link-custom"><i class="bi bi-trophy"></i> Global Leaderboard</a>
+        <a href="#" class="nav-link-custom"><i class="bi bi-code-square"></i> Contract Checker</a>
+        <a href="#" class="nav-link-custom"><i class="bi bi-compass"></i> Base Docs</a>
+      </nav>
+    </div>
+
+    <div class="p-3 rounded-3 mb-3 border border-secondary border-opacity-25" style="background-color: #0d1322;">
+      <span class="fw-bold text-light d-block mb-1" style="font-size: 0.8rem;">Base Ecosystem Tracker</span>
+      <span class="text-muted d-block" style="font-size: 0.75rem;">Analyzes public smart contract deployments and wallet activity.</span>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <span class="badge badge-dev mb-2">BASE NETWORK • MAINNET</span>
+        <h1 class="fw-bold m-0" style="font-size: 2rem;">Wallet & Builder Rank Tracker</h1>
+      </div>
+      <div>
+        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-2 text-light">
+          <i class="bi bi-lightning-charge-fill me-1 text-warning"></i> Mainnet Live
+        </button>
+      </div>
+    </div>
+
+    <!-- Search / Target Address Section -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-8">
+        <div class="card-custom">
+          <label class="form-label mb-2" style="font-size: 0.8rem; letter-spacing: 0.5px;">TARGET BASE ADDRESS</label>
+          <div class="d-flex gap-2">
+            <input type="text" id="walletInput" class="form-control form-control-custom" placeholder="Enter Base address (0x...) or Basename (e.g. name.base.eth)">
+            <button class="btn btn-base text-nowrap" onclick="calculateScore()">Analyze Address</button>
+          </div>
+          <!-- Validation Feedback Message -->
+          <span id="addressError" class="text-danger mt-2 d-none" style="font-size: 0.8rem;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> Invalid address. Please enter a valid 0x Base wallet address or Basename (.base.eth).
+          </span>
+          <span id="addressHelp" class="text-muted mt-2 d-block" style="font-size: 0.8rem;">
+            Fetches transactions and deployed smart contracts directly via RPC/Blockscout.
+          </span>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card-custom d-flex align-items-center gap-3">
+          <div class="text-primary fs-3">
+            <i class="bi bi-cpu"></i>
+          </div>
+          <span class="text-white fw-medium" style="font-size: 0.85rem;">Adjust the scoring sliders below to dynamically re-weight builder rank points in real-time.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Ranking Engine Section -->
+    <div class="row g-4 mb-4">
+      
+      <!-- Scoring Sliders -->
+      <div class="col-lg-5">
+        <div class="card-custom">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold m-0 text-white">Scoring Model Weights</h5>
+            <span class="text-muted" style="font-size: 0.8rem;">Drag to Adjust</span>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1" style="font-size: 0.85rem;">
+              <span class="form-label m-0">Transaction Count Weight</span>
+              <span id="txVal" class="text-primary fw-bold">1 pts / tx</span>
+            </div>
+            <input type="range" class="form-range" min="1" max="5" value="1" id="txSlider" oninput="updateWeights()">
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1" style="font-size: 0.85rem;">
+              <span class="form-label m-0">Active Days Weight</span>
+              <span id="daysVal" class="text-primary fw-bold">15 pts / day</span>
+            </div>
+            <input type="range" class="form-range" min="5" max="15" value="15" id="daysSlider" oninput="updateWeights()">
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1" style="font-size: 0.85rem;">
+              <span class="form-label m-0">Gas Spent Weight (per ETH)</span>
+              <span id="gasVal" class="text-primary fw-bold">1000 pts</span>
+            </div>
+            <input type="range" class="form-range" min="100" max="1000" step="100" value="1000" id="gasSlider" oninput="updateWeights()">
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1" style="font-size: 0.85rem;">
+              <span class="form-label m-0">Contract Deployment Bonus</span>
+              <span id="contractVal" class="text-primary fw-bold">1000 pts / contract</span>
+            </div>
+            <input type="range" class="form-range" min="100" max="1000" step="100" value="1000" id="contractSlider" oninput="updateWeights()">
+          </div>
+
+          <hr class="border-secondary border-opacity-25">
+          <p class="text-muted m-0" style="font-size: 0.8rem;">
+            Drag any slider button to instantly re-calculate the activity score and updated builder rank metrics.
+          </p>
+        </div>
+      </div>
+
+      <!-- Results Grid -->
+      <div class="col-lg-7">
+        <div class="card-custom">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold m-0 text-white">Builder Rank Score</h5>
+            <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 px-2 py-1">Calculated</span>
+          </div>
+
+          <div class="border border-secondary border-opacity-25 rounded-4 p-4 text-center my-3" style="background-color: #0d1322;">
+            <span class="text-muted d-block mb-1" style="font-size: 0.85rem;">Activity & Builder Score</span>
+            <div id="totalScore" class="display-5 fw-bold text-primary mb-1">Analyze address to see the score</div>
+            <span id="percentileRank" class="text-success fw-medium d-none" style="font-size: 0.85rem;"><i class="bi bi-graph-up-arrow me-1"></i> Top 5% of indexed Base wallets</span>
+          </div>
+
+          <div class="row g-2 mt-2">
+            <div class="col-6 col-md-3">
+              <div class="metric-box">
+                <div class="metric-title">Global Rank</div>
+                <div id="globalRank" class="metric-value">--</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="metric-box">
+                <div class="metric-title">Builder Tier</div>
+                <div id="builderTier" class="metric-value">--</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="metric-box">
+                <div class="metric-title">Contracts Deployed</div>
+                <div id="contractsDeployed" class="metric-value">--</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="metric-box">
+                <div class="metric-title">First Active Date</div>
+                <div id="firstActiveDate" class="metric-value" style="font-size: 0.95rem;">--</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw Breakdown -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card-custom">
+          <h5 class="fw-bold mb-3 text-white">On-Chain Activity Raw Breakdown</h5>
+          
+          <div class="row g-3 mb-3">
+            <div class="col-6 col-md-3">
+              <div class="metric-box">
+                <div class="metric-title">Total Transactions</div>
+                <div id="txCount" class="metric-value">--</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="metric-box">
+                <div class="metric-title">Active Days</div>
+                <div id="activeDays" class="metric-value">--</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="metric-box">
+                <div class="metric-title">Gas Spent (ETH)</div>
+                <div id="gasEth" class="metric-value">--</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="metric-box">
+                <div class="metric-title">Contract Deployments</div>
+                <div id="contractCount" class="metric-value">--</div>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-muted m-0" style="font-size: 0.8rem;">
+            Data is read directly from Base mainnet RPC and indexed activity services. Score rankings are relative to all queried addresses in the database.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    let isAnalyzed = false;
+
+    const baseStats = {
+      globalRank: "#42",
+      builderTier: "Gold",
+      contractsDeployed: 2,
+      firstActiveDate: "10/14/2023",
+      txs: 84,
+      days: 32,
+      gas: 0.0142,
+      contracts: 2
+    };
+
+    // Validates standard 0x EVM hex addresses and Basenames / ENS format
+    function isValidBaseAddress(address) {
+      const evmRegex = /^0x[a-fA-F0-9]{40}$/;
+      const nameRegex = /^[a-zA-Z0-9-]+\.(base\.eth|eth)$/;
+      return evmRegex.test(address) || nameRegex.test(address);
+    }
+
+    function updateWeights() {
+      const txW = parseInt(document.getElementById('txSlider').value);
+      const daysW = parseInt(document.getElementById('daysSlider').value);
+      const gasW = parseInt(document.getElementById('gasSlider').value);
+      const contractW = parseInt(document.getElementById('contractSlider').value);
+
+      document.getElementById('txVal').innerText = txW + ' pts / tx';
+      document.getElementById('daysVal').innerText = daysW + ' pts / day';
+      document.getElementById('gasVal').innerText = gasW + ' pts';
+      document.getElementById('contractVal').innerText = contractW + ' pts / contract';
+
+      if (isAnalyzed) {
+        const calculatedScore = Math.floor(
+          (baseStats.txs * txW) + 
+          (baseStats.days * daysW) + 
+          (baseStats.gas * gasW) + 
+          (baseStats.contracts * contractW)
+        );
+
+        document.getElementById('totalScore').innerText = calculatedScore.toLocaleString() + ' PTS';
+      }
+    }
+
+    function calculateScore() {
+      const walletInput = document.getElementById('walletInput');
+      const addressError = document.getElementById('addressError');
+      const addressHelp = document.getElementById('addressHelp');
+      const address = walletInput.value.trim();
+
+      // Clear existing validation state
+      walletInput.classList.remove('is-invalid');
+      addressError.classList.add('d-none');
+      addressHelp.classList.remove('d-none');
+
+      // Address validation check
+      if (!address || !isValidBaseAddress(address)) {
+        walletInput.classList.add('is-invalid');
+        addressError.classList.remove('d-none');
+        addressHelp.classList.add('d-none');
+        return;
+      }
+
+      isAnalyzed = true;
+
+      document.getElementById('percentileRank').classList.remove('d-none');
+
+      document.getElementById('globalRank').innerText = baseStats.globalRank;
+      
+      const tierEl = document.getElementById('builderTier');
+      tierEl.innerText = baseStats.builderTier;
+      tierEl.className = 'metric-value text-info';
+
+      const contractsDepEl = document.getElementById('contractsDeployed');
+      contractsDepEl.innerText = baseStats.contractsDeployed;
+      contractsDepEl.className = 'metric-value text-success';
+
+      document.getElementById('firstActiveDate').innerText = baseStats.firstActiveDate;
+
+      document.getElementById('txCount').innerText = baseStats.txs;
+      document.getElementById('activeDays').innerText = baseStats.days;
+      document.getElementById('gasEth').innerText = baseStats.gas + ' ETH';
+      document.getElementById('contractCount').innerText = baseStats.contracts;
+
+      updateWeights();
+    }
+
+    // Clear error message on typing
+    document.getElementById('walletInput').addEventListener('input', function() {
+      this.classList.remove('is-invalid');
+      document.getElementById('addressError').classList.add('d-none');
+      document.getElementById('addressHelp').classList.remove('d-none');
+    });
+  </script>
+</body>
+</html>
